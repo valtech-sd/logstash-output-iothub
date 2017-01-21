@@ -5,8 +5,11 @@ require "logstash/codecs/plain"
 require "logstash/event"
 
 describe LogStash::Outputs::Iothub do
+  #let(:settings)
   let(:sample_event) { LogStash::Event.new }
-  let(:output) { LogStash::Outputs::Iothub.new }
+  let(:output) { LogStash::Outputs::Iothub.new({
+    "connection_string" => "con_str",
+  }) }
 
   before do
     output.register
