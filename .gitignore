@@ -54,3 +54,4 @@ build-iPhoneSimulator/
 
 vendor
 Gemfile.lock
+*.jar
