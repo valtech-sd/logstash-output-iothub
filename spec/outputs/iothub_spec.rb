@@ -8,11 +8,15 @@ describe LogStash::Outputs::Iothub do
   #let(:settings)
   let(:sample_event) { LogStash::Event.new }
   let(:output) { LogStash::Outputs::Iothub.new({
-    "connection_string" => "con_str",
+    "connection_string" => "{set your iot hub connection string}",
   }) }
 
   before do
     output.register
+  end
+
+  after do
+    output.close
   end
 
   describe "receive message" do

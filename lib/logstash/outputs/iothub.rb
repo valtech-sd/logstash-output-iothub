@@ -4,38 +4,72 @@ require "logstash/namespace"
 require 'java'
 require 'logstash-output-iothub_jars.rb'
 
-# require "./iot-device-client-1.0.17-with-deps.jar"
+java_import "com.microsoft.azure.sdk.iot.device.DeviceClient"
+java_import "com.microsoft.azure.sdk.iot.device.IotHubClientProtocol"
+java_import "com.microsoft.azure.sdk.iot.device.Message"
+java_import "com.microsoft.azure.sdk.iot.device.IotHubEventCallback"
 
-# An iothub output that does nothing.
+$wait_queue = {}
+
+class EventCallback
+  include IotHubEventCallback
+  def execute(status, context)
+    $wait_queue.delete(context) if $wait_queue[context]
+# puts("Callback #{context} : #{status.to_s}")
+  end
+end
+
 class LogStash::Outputs::Iothub < LogStash::Outputs::Base
   config_name "iothub"
 
   config :connection_string, :validate => :string, :required => true
 
-  private
-  def import_jar_namespaces
-    java_import "com.microsoft.azure.sdk.iot.device.DeviceClient"
-    java_import "com.microsoft.azure.sdk.iot.device.IotHubClientProtocol"
-    java_import "com.microsoft.azure.sdk.iot.device.Message"
-    java_import "com.microsoft.azure.sdk.iot.device.IotHubEventCallback"
-  end
-
-  private
-  def open_connection(
-    connection_string = @connection_string,
-    protocol = IotHubClientProtocol::AMQPS)
-    client = DeviceClient.new(connection_string, protocol)
-  end
+  # Todo: support for AMQPS.
+  # config :sas_token_expiry_time_sec, :validte => :number, :default => 2400
 
   public
   def register
-    import_jar_namespaces()
+    # Todo: Get hang in an open with AMQPS.
+    #protocol = IotHubClientProtocol::AMQPS
 
-    open_connection()
+    protocol = IotHubClientProtocol::MQTT
+
+    @client = DeviceClient.new(@connection_string, protocol)
+
+    # Todo: use params for AMQPS protocol.
+    # @client.setOption(
+    #   "SetCertificatePath",
+    #   "/Users/tac/Desktop/logstash-output-iothub/cert.crt")
+
+    # @client.setOption(
+    #   "SetSASTokenExpiryTime",
+    #   @sas_token_expiry_time_sec)
+
+    @client.open()
   end # def register
+
 
   public
   def receive(event)
+    m = event.to_json
+    $wait_queue[m] = true
+    msg = Message.new(m)
+    msg.setExpiryTime(3000)
+    @client.sendEventAsync(
+      msg,
+      EventCallback.new, m)
+
     return "Event received"
-  end # def event
+  end # def receive
+
+  public
+  def close()
+    begin
+      # waiting callbacks for all sent messages.
+      sleep 1 unless $wait_queue.empty?
+
+      @client.close() if @client
+    rescue => e
+    end
+  end
 end # class LogStash::Outputs::Iothub
