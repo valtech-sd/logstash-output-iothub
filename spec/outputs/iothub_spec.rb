@@ -9,6 +9,7 @@ describe LogStash::Outputs::Iothub do
   let(:sample_event) { LogStash::Event.new }
   let(:output) { LogStash::Outputs::Iothub.new({
     "connection_string" => "{set your iot hub connection string}",
+    "use_mqtt_websockets" => "{true to use MQTT over WebSockets on Port 443}",
   }) }
 
   before do

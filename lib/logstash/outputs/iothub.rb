@@ -23,6 +23,7 @@ class LogStash::Outputs::Iothub < LogStash::Outputs::Base
   config_name "iothub"
 
   config :connection_string, :validate => :string, :required => true
+  config :use_mqtt_websockets, :validate => :boolean, :required => false
 
   # Todo: support for AMQPS.
   # config :sas_token_expiry_time_sec, :validte => :number, :default => 2400
@@ -32,7 +33,11 @@ class LogStash::Outputs::Iothub < LogStash::Outputs::Base
     # Todo: Get hang in an open with AMQPS.
     #protocol = IotHubClientProtocol::AMQPS
 
-    protocol = IotHubClientProtocol::MQTT
+    if @use_mqtt_websockets
+      protocol = IotHubClientProtocol::MQTT_WS
+    else
+      protocol = IotHubClientProtocol::MQTT
+    end
 
     @client = DeviceClient.new(@connection_string, protocol)
 
