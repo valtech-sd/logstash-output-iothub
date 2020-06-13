@@ -2,7 +2,7 @@
 
 This is a plugin for [Logstash](https://github.com/elastic/logstash).
 
-This plugin provide sending messages to [Microsoft Azure IoTHub](https://azure.microsoft.com/en-us/services/iot-hub/).
+This plugin provide sending messages to [Microsoft Azure IoTHub](https://azure.microsoft.com/en-us/services/iot-hub/) using either an MQTT connection or an MQTT WebSockets connection using TLS.
 
 
 # Usage
@@ -22,14 +22,16 @@ Please see below example.
 output {
   iothub {
     connection_string => "{set your iot hub connection string}"
+    use_mqtt_websockets => "{true|false}"
   }
 }
 ```
 
-+ `connection_string` : your device connection string.
++ `connection_string` : (required) your device connection string.
++ `use_mqtt_websockets`: (optional) set to **true** to use MQTT over WebSockets which IoTHub does over port 443 using TLS. Remove the parameter or use any other value to use MQTT over the standard MQTT port. 
 
-About connection string, please see
-[here](https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-java-java-getstarted)
+For more information about connection strings, please see [here](https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-java-java-getstarted).
+For more information about connection ports and protocols, please see [here](https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-devguide-protocols).
 
 # For Developers
 
@@ -40,7 +42,7 @@ About connection string, please see
 ### 1. Plugin Developement and Testing
 
 #### Code
-- To get started, you'll need JRuby with the Bundler gem installed.
+- To get started, you'll need JRuby with the Bundler gem installed. For help with this, see **README-How-To-Install-JRuby.md** in this repo.
 
 - Install dependencies
 ```sh
@@ -113,6 +115,13 @@ It is more important to the community that you are able to contribute.
 
 
 It is fully free and fully open source. The license is Apache 2.0, meaning you are pretty much free to use it however you want in whatever way.
+
+# Known Issues
+## Logging Verbosity
+
+The Azure Java SDK required to implement MQTT over WebSockets is extremely verbose in its default mode. See the [logging information page in the azure-iot-sdk-java](https://github.com/Azure/azure-iot-sdk-java/blob/master/logging.md).
+
+The proper way to configure logging from the output gem for the underlying Java library needs to be implemented still and at the time MQTT over WebSockets was implemented, it was not immediately clear how to properly do this. In the meantime, rotate/purge your logstash logs often to avoid issues with those logs growing out of control.
 
 # About Logstash
 ## Documentation

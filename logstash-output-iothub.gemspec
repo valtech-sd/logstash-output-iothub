@@ -1,6 +1,6 @@
 Gem::Specification.new do |s|
   s.name          = 'logstash-output-iothub'
-  s.version       = '1.1.0'
+  s.version       = '1.1.1'
   s.licenses      = ['Apache-2.0']
   s.summary       = 'Output plugin for Logstash for sending Azure IoTHub'
   s.description   = 'Output plugin for Logstash for sending Azure IoTHub'
@@ -17,7 +17,7 @@ Gem::Specification.new do |s|
   # Special flag to let us know this is actually a logstash plugin
   s.metadata = { "logstash_plugin" => "true", "logstash_group" => "output" }
 
-  s.requirements << "jar 'com.microsoft.azure.sdk.iot:iot-device-client', '1.0.17'"
+  s.requirements << "jar 'com.microsoft.azure.sdk.iot:iot-device-client', '1.22.0'"
   s.add_development_dependency 'jar-dependencies'
 
   # Gem dependencies
